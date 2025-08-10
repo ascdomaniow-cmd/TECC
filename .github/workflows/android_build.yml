@@ -13,35 +13,65 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java (Temurin 17)
+      - name: Set up Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter (stable pinned)
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          # Optional: specify a version, e.g. '3.22.2'
+          channel: stable
+          flutter-version: '3.22.2'
 
-      - name: Unzip source
-        run: unzip -o tecc_app_flutter_with_ci.zip -d .
+      - name: Doctor (env sanity)
+        run: |
+          flutter --version
+          flutter doctor -v
+
+      - name: Ensure Android platform exists (creates /android if missing)
+        run: flutter create . --platforms=android
 
       - name: Install dependencies
         run: flutter pub get
-        working-directory: tecc_app
 
-      - name: Ensure Android platform exists
-        run: flutter create . --platforms=android
-        working-directory: tecc_app
+      - name: Clean (fresh Gradle/outputs)
+        run: flutter clean
 
-      - name: Build APK (release)
-        run: flutter build apk --release
-        working-directory: tecc_app
+      - name: Build APK (release) with verbose log
+        run: |
+          set -o pipefail
+          flutter build apk --release -v 2>&1 | tee flutter_build_log.txt
 
-      - name: Upload APK artifact
+      - name: Upload APK artifact (release)
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: tecc_app/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # awaryjnie: jeśli release się wywali, spróbujmy debug
+      - name: Try debug APK if release failed
+        if: failure()
+        run: |
+          set -o pipefail
+          flutter build apk --debug -v 2>&1 | tee flutter_build_log_debug.txt
+
+      - name: Upload Debug APK (if built)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: ignore
+
+      - name: Upload build logs (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-build-logs
+          path: |
+            flutter_build_log.txt
+            flutter_build_log_debug.txt
+          if-no-files-found: ignore
