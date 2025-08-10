@@ -44,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-path: tecc_app/tecc_app/build/app/outputs/flutter-apk/app-release.apk
+          path: tecc_app/tecc_app/build/app/outputs/flutter-apk/app-release.apk
