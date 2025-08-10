@@ -28,7 +28,7 @@ jobs:
         run: unzip -o tecc_app_flutter_with_ci.zip -d .
 
       - name: Move project files
-        run: mv -f tecc_app/tecc_app/* .
+        run: mv -f tecc_app/* .
 
       - name: Update intl dependency
         run: flutter pub add intl:^0.20.2
