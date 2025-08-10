@@ -33,7 +33,10 @@ jobs:
       - name: Unzip source and prepare project
         run: |
           unzip -o tecc_app_flutter_with_ci.zip -d .
-          mv -f tecc_app/* .
+          if [ -d tecc_app ]; then
+            mv -f tecc_app/* .
+            rm -rf tecc_app
+          fi
 
       - name: Ensure Android platform exists (creates /android if missing)
         run: flutter create . --platforms=android
@@ -56,6 +59,7 @@ jobs:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
+      # awaryjnie: ścią release się wywali, spróbujmy debug
       - name: Try debug APK if release failed
         if: failure()
         run: |
