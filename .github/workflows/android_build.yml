@@ -23,25 +23,25 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # flutter-version: '3.22.2'
+          # Optional: specify a version, e.g. '3.22.2'
 
-      - name: Unzip project
+      - name: Unzip source
         run: unzip -o tecc_app_flutter_with_ci.zip -d .
 
       - name: Install dependencies
         run: flutter pub get
-        working-directory: tecc_app/tecc_app
+        working-directory: tecc_app
 
       - name: Ensure Android platform exists
         run: flutter create . --platforms=android
-        working-directory: tecc_app/tecc_app
+        working-directory: tecc_app
 
       - name: Build APK (release)
         run: flutter build apk --release
-        working-directory: tecc_app/tecc_app
+        working-directory: tecc_app
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: tecc_app/tecc_app/build/app/outputs/flutter-apk/app-release.apk
+          path: tecc_app/build/app/outputs/flutter-apk/app-release.apk
