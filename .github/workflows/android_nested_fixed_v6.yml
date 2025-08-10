@@ -1,0 +1,43 @@
+name: Build Android APK from zip nested fix v5
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: unzip -o tecc_app_flutter_with_ci.zip -d .
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Regenerate Android project
+        run: flutter create . --platforms=android
+        working-directory: tecc_app
+
+      - name: Update intl dependency
+        run: flutter pub add intl:^0.20.2
+        working-directory: tecc_app
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: tecc_app
+
+      - name: Build release APK
+        run: flutter build apk --release
+        working-directory: tecc_app
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: tecc_app/build/app/outputs/flutter-apk/app-release.apk
