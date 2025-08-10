@@ -30,6 +30,11 @@ jobs:
           flutter --version
           flutter doctor -v
 
+      - name: Unzip source and prepare project
+        run: |
+          unzip -o tecc_app_flutter_with_ci.zip -d .
+          mv -f tecc_app/* .
+
       - name: Ensure Android platform exists (creates /android if missing)
         run: flutter create . --platforms=android
 
@@ -51,7 +56,6 @@ jobs:
           name: app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      # awaryjnie: jeśli release się wywali, spróbujmy debug
       - name: Try debug APK if release failed
         if: failure()
         run: |
