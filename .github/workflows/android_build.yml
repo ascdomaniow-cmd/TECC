@@ -1,4 +1,4 @@
-name: Build Android APK from zip
+name: Build Android APK (Release)
 
 on:
   workflow_dispatch:
@@ -8,27 +8,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Java (Temurin 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          # flutter-version: '3.22.2'
+
       - name: Unzip project
         run: unzip -o tecc_app_flutter_with_ci.zip -d .
 
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: Flutter pub get
+      - name: Install dependencies
         run: flutter pub get
-        working-directory: tecc_app
+        working-directory: tecc_app/tecc_app
 
-      - name: Build release APK
+      - name: Ensure Android platform exists
+        run: flutter create . --platforms=android
+        working-directory: tecc_app/tecc_app
+
+      - name: Build APK (release)
         run: flutter build apk --release
-        working-directory: tecc_app
+        working-directory: tecc_app/tecc_app
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: tecc_app/build/app/outputs/flutter-apk/app-release.apk
+path: tecc_app/tecc_app/build/app/outputs/flutter-apk/app-release.apk
